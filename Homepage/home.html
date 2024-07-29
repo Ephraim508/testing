@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://kit.fontawesome.com/6fa10bc29a.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="home.css">
+</head>
+<body>
+    <div>
+        <nav class="navbar-container">
+            <div class="menu-icon">
+                <i class="fa-solid fa-bars" id="menu-icon-bar"></i>
+            </div>
+
+            <div class="logo-container">
+                <div>
+                    <img src="/images/pen.png" class="logo-img"/>
+                </div>
+                <div class="logo-heading">
+                    Note
+                </div>
+            </div> 
+            <input type="search" placeholder="Search" class="search-bar" id="searchBar"/>
+        </nav>
+
+        <section class="section1">
+            <aside class="menu-bar" id="menu-bar">
+                <div class="menu-icons" id="penBar">
+                    <i class="fa-solid fa-pen"></i>
+                    <p id="note" class="note">Note</p>
+                </div>
+                <div class="menu-icons" id="archiveBar">
+                    <i class="fa-solid fa-box-archive"></i><p id="note" class="note">Archive</p>
+                </div>
+                <div class="menu-icons" id="deleteBar">
+                    <i class="fa-solid fa-trash"></i><p id="note" class="note">Bin</p>
+                </div>
+            </aside>
+
+            <section class="section-2">
+                <div class="main-container">
+                    <h1 class="heading">Make a Note</h1>
+
+                    <div class="input-container">
+                        <input type="text" placeholder="Make a Note" class="input" id="input"/>
+                        <button class="button" id="addButton">Add</button>
+                        <button class="button" id="saveButton">Save</button>
+                    </div>
+
+                    <ul class="notes-container" id="notes-container"></ul>
+
+                    <div id="colorSelector" class="color-selector">
+                        <div class="color-option" style="background-color: red;" onclick="setColor('red')"></div>
+                        <div class="color-option" style="background-color: green;" onclick="setColor('green')"></div>
+                        <div class="color-option" style="background-color: blue;" onclick="setColor('blue')"></div>
+                        <div class="color-option" style="background-color: yellow;" onclick="setColor('yellow')"></div>
+                    </div>
+                </div>
+            </section>
+        </section>
+    </div>
+
+    <script>
+       let menuIconBar = document.getElementById("menu-icon-bar");
+let menuBarContainer = document.getElementById("menu-bar");
+let notesContainer = document.getElementById("notes-container");
+let addButton = document.getElementById("addButton");
+let colorSelector = document.getElementById("colorSelector");
+let saveButton = document.getElementById("saveButton");
+let deleteBar = document.getElementById("deleteBar");
+let archiveBar = document.getElementById("archiveBar");
+let penBar = document.getElementById("penBar");
+let searchBar = document.getElementById("searchBar");
+
+deleteBar.addEventListener("click", function() {
+    window.location.href = "/LoginPage/trash.html";
+});
+
+archiveBar.addEventListener("click", function() {
+    window.location.href = "/LoginPage/archive.html";
+});
+
+penBar.addEventListener("click", function() {
+    window.location.href = "/HomePage/home.html";
+});
+
+menuIconBar.addEventListener("click", function() {
+    menuBarContainer.classList.toggle('menu-bar-decrease');
+});
+
+let trashList = [];
+let archiveList = [];
+
+function getNoteListFromLocalStorage() {
+    let stringifiedNoteList = localStorage.getItem("noteList");
+    let parsedNoteList = JSON.parse(stringifiedNoteList);
+    return parsedNoteList ? parsedNoteList : [];
+}
+
+let noteList = getNoteListFromLocalStorage();
+
+function displayEmptyMessage() {
+    let emptyMessage = document.getElementById("emptyMessage");
+    if (noteList.length === 0) {
+        if (!emptyMessage) {
+            emptyMessage = document.createElement("div");
+            emptyMessage.id = "emptyMessage";
+            
+            emptyMessage.classList.add("paraDiv");
+            let img = document.createElement("img");
+            img.src = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjMDAwIj4KICA8cGF0aCBkPSJNOSAyMWMwIC41NS40NSAxIDEgMWg0Yy41NSAwIDEtLjQ1IDEtMXYtMUg5djF6bTMtMTlDOC4xNCAyIDUgNS4xNCA1IDljMCAyLjM4IDEuMTkgNC40NyAzIDUuNzRWMTdjMCAuNTUuNDUgMSAxIDFoNmMuNTUgMCAxLS40NSAxLTF2LTIuMjZjMS44MS0xLjI3IDMtMy4zNiAzLTUuNzQgMC0zLjg2LTMuMTQtNy03LTd6bTIuODUgMTEuMWwtLjg1LjZWMTZoLTR2LTIuM2wtLjg1LS42QTQuOTk3IDQuOTk3IDAgMCAxIDcgOWMwLTIuNzYgMi4yNC01IDUtNXM1IDIuMjQgNSA1YzAgMS42My0uOCAzLjE2LTIuMTUgNC4xeiIvPgo8L3N2Zz4K";
+            img.classList.add("imageEpmty");
+            let para = document.createElement("p");
+            para.textContent = "Notes you add appear here";
+            emptyMessage.appendChild(img);
+            emptyMessage.appendChild(para);
+            notesContainer.appendChild(emptyMessage);
+        }
+    } else {
+        if (emptyMessage) {
+            notesContainer.removeChild(emptyMessage);
+        }
+    }
+}
+
+let listLength = 0;
+saveButton.onclick = function() {
+    localStorage.setItem("noteList", JSON.stringify(noteList));
+}
+
+// Deleting data
+function onDeleteNote(noteId) {
+    let deleteElement = document.getElementById(noteId);
+    notesContainer.removeChild(deleteElement);
+
+    let findDeleteElementIndex = noteList.findIndex(function(each) {
+        let eachNote = "note" + each.uniqueNo;
+        return eachNote === noteId;
+    });
+
+    if (findDeleteElementIndex !== -1) {
+        let deletedNote = noteList[findDeleteElementIndex];
+        trashList.push(deletedNote);
+        noteList.splice(findDeleteElementIndex, 1);
+    }
+
+    localStorage.setItem("trashList", JSON.stringify(trashList));
+    localStorage.setItem("noteList", JSON.stringify(noteList));
+    displayEmptyMessage();
+}
+
+// Archiving data
+function onArchive(id) {
+    let findEl = noteList.findIndex(function(each) {
+        let eachNote = "note" + each.uniqueNo;
+        return eachNote === id;
+    });
+
+    if (findEl !== -1) {
+        let archiveEle = noteList[findEl];
+        archiveEle.backgroundColor = document.getElementById(id).style.backgroundColor;
+        archiveList.push(archiveEle);
+        noteList.splice(findEl, 1);
+    }
+    localStorage.setItem('archiveList', JSON.stringify(archiveList));
+    localStorage.setItem('noteList', JSON.stringify(noteList));
+
+    let archiveElement = document.getElementById(id);
+    notesContainer.removeChild(archiveElement);
+    displayEmptyMessage();
+}
+
+// Adding the data into the container
+addButton.addEventListener("click", function() {
+    let noteInput = document.getElementById("input");
+    let inputVal = noteInput.value;
+
+    if (inputVal === "") {
+        alert("Enter valid note");
+        return;
+    }
+
+    listLength++;
+
+    let newNote = {
+        text: inputVal,
+        uniqueNo: listLength
+    };
+    noteList.push(newNote);
+    createNoteAndAppend(newNote);
+    noteInput.value = "";
+    displayEmptyMessage();
+});
+
+// Creating and appending the data
+function createNoteAndAppend(note) {
+    let noteId = "note" + note.uniqueNo;
+    let noteElement = document.createElement("li");
+    noteElement.textContent = note.text;
+    noteElement.id = noteId;
+    noteElement.classList.add("list-element");
+    if (note.backgroundColor) {
+        noteElement.style.backgroundColor = note.backgroundColor;
+    }
+    let iconDiv = document.createElement('div');
+    
+    // Delete button
+    let buttonDel = document.createElement('button');
+    let iconDel = document.createElement('i');
+    iconDel.classList.add("fa-solid", "fa-trash", "noteEleIcon");
+    buttonDel.appendChild(iconDel);
+    buttonDel.classList.add("noteEleButton");
+
+    // Color button
+    let buttonCol = document.createElement('button');
+    let iconCol = document.createElement('i');
+    iconCol.classList.add("fa-solid", "fa-palette", "noteEleIcon");
+    buttonCol.appendChild(iconCol);
+    buttonCol.classList.add("noteEleButton");
+
+    // Archive button
+    let buttonArch = document.createElement('button');
+    let iconArch = document.createElement('i');
+    iconArch.classList.add("fa-solid", "fa-lock", "noteEleIcon");
+    buttonArch.appendChild(iconArch);
+    buttonArch.classList.add("noteEleButton");
+
+    iconDiv.appendChild(buttonDel);
+    iconDiv.appendChild(buttonCol);
+    iconDiv.appendChild(buttonArch);
+    noteElement.appendChild(iconDiv);
+    notesContainer.appendChild(noteElement);
+
+    buttonDel.onclick = function() {
+        onDeleteNote(noteId);
+    };
+
+    buttonCol.onclick = function() {
+        onColorSet(noteElement);
+    };
+
+    buttonArch.onclick = function() {
+        onArchive(noteId);
+    }
+}
+
+// Iterating data and sending it into the container
+for (let note of noteList) {
+    createNoteAndAppend(note);
+}
+displayEmptyMessage();
+
+let currentNoteElement = null;
+
+// Color set changing the background
+function onColorSet(noteElement) {
+    currentNoteElement = noteElement;
+    colorSelector.style.display = colorSelector.style.display === 'block' ? 'none' : 'block';
+}
+
+function setColor(color) {
+    if (currentNoteElement) {
+        currentNoteElement.style.backgroundColor = color;
+
+        // Update the background color in noteList
+        let noteId = currentNoteElement.id;
+        let noteIndex = noteList.findIndex(note => "note" + note.uniqueNo === noteId);
+        if (noteIndex !== -1) {
+            noteList[noteIndex].backgroundColor = color;
+            localStorage.setItem("noteList", JSON.stringify(noteList));
+        }
+    }
+    document.getElementById("colorSelector").style.display = 'none';
+}
+
+// Search functionality
+searchBar.addEventListener("input", function () {
+    let searchValue = searchBar.value.toLowerCase();
+    notesContainer.innerHTML = "";
+
+    let filteredNotes = noteList.filter(function (note) {
+        return note.text.toLowerCase().includes(searchValue);
+    });
+
+    for (let note of filteredNotes) {
+        createNoteAndAppend(note);
+    }
+    displayEmptyMessage();
+});
+
+
+</script>
+</body>
+</html>

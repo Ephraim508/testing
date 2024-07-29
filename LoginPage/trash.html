@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://kit.fontawesome.com/6fa10bc29a.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="trash.css">
+</head>
+<body>
+    <div>
+        <nav class="navbar-container">
+            <div class="menu-icon">
+                <i class="fa-solid fa-bars" id="menu-icon-bar"></i>
+            </div>
+
+            <div class="logo-container">
+                <div>
+                    <img src="/images/pen.png" class="logo-img"/>
+                </div>
+                <div class="logo-heading">
+                    Note
+                </div>
+            </div>
+            <!-- <input type="search" placeholder="Search" class="search-bar"/> -->
+        </nav>
+ 
+        <section class="section1">
+            <aside class="menu-bar" id="menu-bar">
+                <div class="menu-icons" id="penBar">
+                    <i class="fa-solid fa-pen"></i>
+                    <p id="note" class="note">Note</p>
+                </div>
+                <div class="menu-icons" id="archiveBar">
+                    <i class="fa-solid fa-box-archive"></i><p id="note" class="note">Archive</p>
+                </div>
+                <div class="menu-icons" id="deleteBar">
+                    <i class="fa-solid fa-trash"></i><p id="note" class="note">Bin</p>
+                </div>
+            </aside>
+
+            <section class="section-2">
+                <div id="trashListContainer" class="main-container">
+
+                </div>
+                
+            </section>
+        </section>
+    </div>
+
+    <script>
+        let trashListContainer=document.getElementById("trashListContainer");
+        let deleteBar=document.getElementById("deleteBar");
+        let archiveBar=document.getElementById("archiveBar");
+        let penBar=document.getElementById("penBar")
+
+        deleteBar.addEventListener("click",function(){
+            window.location.href="/LoginPage/trash.html"
+        })
+
+        archiveBar.addEventListener("click",function(){
+            window.location.href="/LoginPage/archive.html"
+        })
+
+        penBar.addEventListener("click",function(){
+            window.location.href="/HomePage/home.html"
+        })
+    
+
+        function getTrashList(){
+            let stringifytrashlist=localStorage.getItem("trashList")
+            let parsedtrashList = JSON.parse(stringifytrashlist);
+    if (parsedtrashList === null) {
+        return [];
+    } else {
+        return parsedtrashList;
+        }
+
+    }
+
+    let trashelements=getTrashList();
+
+    function displayEmptyMessage() {
+            let emptyMessage = document.getElementById("emptyMessage");
+            if (trashelements.length === 0) {
+                if (!emptyMessage) {
+                    emptyMessage = document.createElement("div");
+                    emptyMessage.id = "emptyMessage";
+                    
+                    emptyMessage.classList.add("paragraphDiv");
+                    let img=document.createElement("img");
+                    img.src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjMDAwIj4KICA8cGF0aCBkPSJNMTUgNFYzSDl2MUg0djJoMXYxM2MwIDEuMS45IDIgMiAyaDEwYzEuMSAwIDItLjkgMi0yVjZoMVY0aC01em0yIDE1SDdWNmgxMHYxM3oiLz4KICA8cGF0aCBkPSJNOSA4aDJ2OUg5em00IDBoMnY5aC0yeiIvPgo8L3N2Zz4K"
+                    img.classList.add("imageEpmty")
+                    let para = document.createElement("p");
+                    para.textContent = "No notes in Recycle Bin";
+                    emptyMessage.appendChild(img)
+                    emptyMessage.appendChild(para);
+                    trashListContainer.appendChild(emptyMessage);
+                }
+            } else {
+                if (emptyMessage) {
+                    archiveListContainer.removeChild(emptyMessage);
+                }
+            }
+           
+        }
+
+
+    function  restoreTrash(id){
+        let stringifiedNoteList = localStorage.getItem("noteList");
+            let parsedNoteList = JSON.parse(stringifiedNoteList);
+            if (parsedNoteList === null) {
+                parsedNoteList = [];
+            }
+
+            let findele = trashelements.findIndex(function(each) {
+                return each.uniqueNo === id;
+            });
+
+            if (findele !== -1) {
+                let restoredNote = trashelements[findele];
+                parsedNoteList.push(restoredNote);
+                trashelements.splice(findele, 1);
+                localStorage.setItem("noteList", JSON.stringify(parsedNoteList));
+                localStorage.setItem("trashList", JSON.stringify(trashelements));
+             
+                trashListContainer.removeChild(document.getElementById(id));
+            }
+            displayEmptyMessage()
+    }
+
+
+    function  deletePermenantly(id){
+       let tr=document.getElementById(id);
+       trashListContainer.removeChild(tr)
+        let findData=trashelements.findIndex(function(each){
+            if(each.uniqueNo===id){
+                return true;
+            }
+            else{
+                return false;
+            }
+        })
+
+        if(findData!==-1){
+            trashelements.splice(findData,1)
+        }
+
+        localStorage.setItem("trashList",JSON.stringify(trashelements))
+        displayEmptyMessage()
+    }
+
+
+     function createTrashList(trash){
+       
+            let trashElement = document.createElement("li");
+            trashElement.textContent =trash.text;
+            trashElement.id =trash.uniqueNo;
+            trashElement.classList.add("list-element");
+
+            if (trash.backgroundColor) {
+                trashElement.style.backgroundColor = trash.backgroundColor;
+    }
+
+            let iconDiv = document.createElement('div');
+            
+            // delete button
+            let buttonDel = document.createElement('button');
+            let iconDel = document.createElement('i');
+            iconDel.classList.add("fa-solid", "fa-trash", "noteEleIcon");
+            
+            let buttonRes=document.createElement('button')
+            let iconrestore=document.createElement('i');
+             iconrestore.classList.add("fa-solid", "fa-share-from-square","noteEleIcon")
+            
+             buttonRes.classList.add("noteEleButton")
+             buttonDel.classList.add("noteEleButton");
+
+            buttonDel.appendChild(iconDel);
+            buttonRes.appendChild(iconrestore);
+           
+             
+            
+            iconDiv.appendChild(buttonDel);
+            iconDiv.appendChild(buttonRes);
+          
+            trashElement.appendChild(iconDiv);
+            trashListContainer.appendChild(trashElement);
+
+            buttonDel.onclick=function(){
+                deletePermenantly(trash.uniqueNo)
+            }
+
+
+            buttonRes.onclick=function(){
+                restoreTrash(trash.uniqueNo)
+            }
+     }
+
+
+    for(let i of trashelements){
+        console.log(i)
+        createTrashList(i)
+        
+    }
+
+    displayEmptyMessage()
+    </script>

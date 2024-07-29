@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://kit.fontawesome.com/6fa10bc29a.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="archive.css">
+</head>
+<body>
+    <div>
+        <nav class="navbar-container">
+            <div class="menu-icon">
+                <i class="fa-solid fa-bars" id="menu-icon-bar"></i>
+            </div>
+
+            <div class="logo-container">
+                <div>
+                    <img src="/images/pen.png" class="logo-img"/>
+                </div>
+                <div class="logo-heading">
+                    Note
+                </div>
+            </div>
+            <!-- <input type="search" placeholder="Search" class="search-bar"/> -->
+        </nav>
+ 
+        <section class="section1">
+            <aside class="menu-bar" id="menu-bar">
+                <div class="menu-icons" id="penBar">
+                    <i class="fa-solid fa-pen"></i>
+                    <p id="note" class="note">Note</p>
+                </div>
+                <div class="menu-icons" id="archiveBar">
+                    <i class="fa-solid fa-box-archive"></i><p id="note" class="note">Archive</p>
+                </div>
+                <div class="menu-icons" id="deleteBar">
+                    <i class="fa-solid fa-trash"></i><p id="note" class="note">Bin</p>
+                </div>
+            </aside>
+
+            <section class="section-2">
+                <div id="archiveListContainer" class="main-container">
+
+                </div>
+                
+            </section>
+        </section>
+    </div>
+
+    <script>
+    const archiveListContainer = document.getElementById("archiveListContainer");
+    let deleteBar=document.getElementById("deleteBar");
+        let archiveBar=document.getElementById("archiveBar");
+        let penBar=document.getElementById("penBar")
+
+        deleteBar.addEventListener("click",function(){
+            window.location.href="/LoginPage/trash.html"
+        })
+
+        archiveBar.addEventListener("click",function(){
+            window.location.href="/LoginPage/archive.html"
+        })
+
+        penBar.addEventListener("click",function(){
+            window.location.href="/HomePage/home.html"
+        })
+
+function getArchiveList() {
+    let stringifytrashlist = localStorage.getItem("archiveList");
+    let parsedArchiveList = JSON.parse(stringifytrashlist);
+    return parsedArchiveList === null ? [] : parsedArchiveList;
+}
+
+function getNoteList() {
+    let stringifiedNoteList = localStorage.getItem("noteList");
+    let parsedNoteList = JSON.parse(stringifiedNoteList);
+    return parsedNoteList === null ? [] : parsedNoteList;
+}
+
+function displayEmptyMessage() {
+            let emptyMessage = document.getElementById("emptyMessage");
+            if (getArchiveList().length === 0) {
+                if (!emptyMessage) {
+                    emptyMessage = document.createElement("div");
+                    emptyMessage.id = "emptyMessage";
+                    
+                    emptyMessage.classList.add("paragraphDiv");
+                    let img=document.createElement("img");
+                    img.src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjMDAwIj4KICA8cGF0aCBkPSJNMjAuNTQgNS4yM2wtMS4zOS0xLjY4QzE4Ljg4IDMuMjEgMTguNDcgMyAxOCAzSDZjLS40NyAwLS44OC4yMS0xLjE2LjU1TDMuNDYgNS4yM0MzLjE3IDUuNTcgMyA2LjAyIDMgNi41VjE5YzAgMS4xLjkgMiAyIDJoMTRjMS4xIDAgMi0uOSAyLTJWNi41YzAtLjQ4LS4xNy0uOTMtLjQ2LTEuMjd6TTYuMjQgNWgxMS41MmwuODMgMUg1LjQybC44Mi0xek01IDE5VjhoMTR2MTFINXptMTEtNS41bC00IDQtNC00IDEuNDEtMS40MUwxMSAxMy42N1YxMGgydjMuNjdsMS41OS0xLjU5TDE2IDEzLjV6Ii8+Cjwvc3ZnPgo="
+                    img.classList.add("imageEpmty")
+                    let para = document.createElement("p");
+                    para.textContent = "Your Archived notes apppear here";
+                    emptyMessage.appendChild(img)
+                    emptyMessage.appendChild(para);
+                    archiveListContainer.appendChild(emptyMessage);
+                }
+            } else {
+                if (emptyMessage) {
+                    archiveListContainer.removeChild(emptyMessage);
+                }
+            }
+           
+        }
+
+function onUnarchive(uniqueNo){
+    let archiveList = getArchiveList();
+            let itemToUnarchive = archiveList.find(item => item.uniqueNo === uniqueNo);
+
+            if (itemToUnarchive) {
+                // Retrieve the existing note list
+                itemToUnarchive.backgroundColor = document.getElementById(uniqueNo).style.backgroundColor;
+                let noteList = getNoteList();
+                
+                // Add the item back to the note list
+                noteList.push(itemToUnarchive);
+
+                // Remove the item from the archive list
+                archiveList = archiveList.filter(item => item.uniqueNo !== uniqueNo);
+               
+                // Update localStorage
+                localStorage.setItem("noteList", JSON.stringify(noteList));
+                localStorage.setItem("archiveList", JSON.stringify(archiveList));
+
+                // Refresh the displayed archive list
+                archiveListContainer.innerHTML = '';
+                for (let item of getArchiveList()) {
+                    createArchList(item);
+                }
+            }
+           else{
+            displayEmptyMessage()
+           }
+            
+}
+    
+    function createArchList(trash){
+       
+       let archiveElement = document.createElement("li");
+       archiveElement.textContent =trash.text;
+       archiveElement.id =trash.uniqueNo;
+       archiveElement.classList.add("list-element");
+
+       if (trash.backgroundColor) {
+        archiveElement.style.backgroundColor = trash.backgroundColor;
+    }
+       let iconDiv = document.createElement('div');
+       
+       // delete button
+       let buttonUnArch = document.createElement('button');
+       let iconUnArch = document.createElement('i');
+       iconUnArch.classList.add("fa-solid", "fa-arrow-rotate-left", "noteEleIcon");
+       
+       buttonUnArch.classList.add("noteEleButton");
+
+      
+      buttonUnArch.appendChild(iconUnArch)
+        
+       
+       iconDiv.appendChild(buttonUnArch);
+      
+     
+       archiveElement.appendChild(iconDiv);
+       archiveListContainer.appendChild(archiveElement);
+
+     
+
+       
+
+       buttonUnArch.onclick=function(){
+        onUnarchive(trash.uniqueNo)
+       }
+      
+}
+
+
+
+
+    for(let i of getArchiveList()){
+        console.log(i)
+        createArchList(i)
+    }
+
+
+    displayEmptyMessage()
+
+
+       
+
+    </script>
